@@ -12,10 +12,20 @@ class Jati {
     this.connect();
   }
   connect(){
-    console.log("connecting")
     this.ws = new WebSocket(this.base_url);
     let _jati = this;
     this.ws.addEventListener('open', function (event) {
+      // Listen for messages
+      this.addEventListener('message', function (event) {
+        _jati.onEvent(event.data);
+      });
+
+      this.addEventListener('close', function (event) {
+        _jati.isConnected = false;
+          if(!_jati.isClose)
+            _jati.connect();
+      });
+
       _jati.isConnected = true;
       while (_jati._emit_queue.length > 0) {
         this.send(_jati._emit_queue.shift())
@@ -24,24 +34,12 @@ class Jati {
     });
 
     this.ws.addEventListener('error', function (event) {
-      this.ws.close();
+      this.close();
       setTimeout(_jati.connect(), 1000);
-    });
-    
-    this.ws.addEventListener('close', function (event) {
-      _jati.isConnected = false;
-      if(!this.isClose)
-        _jati.connect();
-    });
-
-    // Listen for messages
-    this.ws.addEventListener('message', function (event) {
-      _jati.onEvent(event.data);
     });
   }
 
   onConnected(){
-    console.log("connected")
   }
 
   onEvent(msg){
@@ -58,7 +56,7 @@ class Jati {
     this._events[event] = _func
   }
   
-  emit(event, data){
+  emit(event, data = null){
     if(this.isConnected){
       this.ws.send(JSON.stringify({
         request: event,
