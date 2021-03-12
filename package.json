@@ -2,6 +2,7 @@
   "name": "jati-js",
   "version": "0.0.1",
   "description": "JatiJs is module for Jati python.",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
